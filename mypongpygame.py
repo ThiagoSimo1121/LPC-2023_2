@@ -34,23 +34,48 @@ scoring_sound_effect = pygame.mixer.Sound('assets/258020__kodack__arcade-bleep-s
 # player 1
 player_1 = pygame.image.load("assets/player.png")
 player_1_y = 300
-player_1_x = 50
 player_1_move_up = False
 player_1_move_down = False
 
 # player 2 - robot
 player_2 = pygame.image.load("assets/player.png")
 player_2_y = 300
-player_2_x = 1180
 ai_speed = 5
+
+# division of the paddle
+height_paddle = 150
+paddle_part_height = height_paddle / 15
 
 # ball
 ball = pygame.image.load("assets/ball.png")
 ball_x = 640
 ball_y = 360
-ball_dx = -5
-ball_dy = -5
-ball_acceleration = 1
+ball_dx = 5
+ball_dy = 5
+speed_limit = 20
+
+def ball_start():
+    global ball_x, ball_y, ball_dx, ball_dy
+    ball_x = 640
+    ball_y = 360
+    ball_dx = 5
+    ball_dy = 5
+    ball_dx *= -1
+    ball_dy *= -1
+    scoring_sound_effect.play()
+def speed_of_ball(ball_s):
+    global speed_limit
+    if abs(ball_s) < speed_limit:
+        ball_s *= -1.11
+    else:
+        if ball_s > 0:
+            ball_s = -speed_limit
+        else:
+            ball_s = speed_limit
+    return ball_s
+
+
+
 
 # score
 score_1 = 0
@@ -94,44 +119,52 @@ while game_loop:
             bounce_sound_effect.play()
 
         # ball collision with the player 1 's paddle
-        if 100 > ball_x > 50:
-            if player_1_y < ball_y + 25:
-                if player_1_y + 150 > ball_y:
-                    ball_dx *= -1
-                    ball_dy *= -1
-                    ball_acceleration += 0.1
+        # hitting in horizontal
+        if 80 - abs(speed_of_ball(ball_dx)) < ball_x < 100:
+            for i in range(15):
+                if player_1_y + i * paddle_part_height < ball_y + 20 < player_1_y + (i + 1) * paddle_part_height:
+                    if i == 7:
+                        ball_dy = 0
+                    else:
+                        ball_dy = i - 7
+                    ball_dx = speed_of_ball(ball_dx)
                     bounce_sound_effect.play()
+                    break
+
+        # hitting in vertical
+        if 30 < ball_x < 80 - abs(speed_of_ball(ball_dx)):
+            if player_1_move_up and player_1_y < ball_y <= player_1_y + 20 + speed_of_ball(ball_dy):
+                ball_y -= (ball_dy + 15)
+                ball_dy = speed_of_ball(ball_dy)
+                bounce_sound_effect.play()
+            elif player_1_move_down and player_1_y + 150 >= ball_y + 20 >= player_1_y + 130 - speed_of_ball(ball_dy):
+                ball_y += (ball_dy + 15)
+                ball_dy = speed_of_ball(ball_dy)
+                bounce_sound_effect.play()
+        elif 20 < ball_x < 100:
+            if player_1_y + 30 == ball_y + 25 or player_1_y + 155 == ball_y:
+                ball_dy = speed_of_ball(ball_dy)
+                bounce_sound_effect.play()
 
         # ball collision with the player 2 's paddle
-        if  1210 > ball_x > 1160:
-            if player_2_y < ball_y + 25:
+        if 1210 > ball_x > 1160:
+            if player_2_y < ball_y + 25 and ball_dx > 0:
                 if player_2_y + 150 > ball_y:
                     ball_dx *= -1
-                    ball_dy *= -1
-                    ball_acceleration += 0.1
                     bounce_sound_effect.play()
 
         # scoring points
         if ball_x < -50:
-            ball_x = 640
-            ball_y = 360
-            ball_dy *= -1
-            ball_dx *= -1
+            ball_start()
             score_2 += 1
-            ball_acceleration = 1
-            scoring_sound_effect.play()
         elif ball_x > 1320:
-            ball_x = 640
-            ball_y = 360
-            ball_dy *= -1
-            ball_dx *= -1
+            ball_start()
             score_1 += 1
-            ball_acceleration = 1
-            scoring_sound_effect.play()
+
 
         # ball movement
-        ball_x = ball_x + ball_dx * ball_acceleration 
-        ball_y = ball_y + ball_dy * ball_acceleration 
+        ball_x = ball_x + ball_dx
+        ball_y = ball_y + ball_dy
 
 
         # player 1 up movement
@@ -173,8 +206,8 @@ while game_loop:
 
         # drawing objects
         screen.blit(ball, (ball_x, ball_y))
-        screen.blit(player_1, (player_1_x, player_1_y))
-        screen.blit(player_2, (player_2_x, player_2_y))
+        screen.blit(player_1, (50, player_1_y))
+        screen.blit(player_2, (1180, player_2_y))
         screen.blit(score_text, score_text_rect)
     else:
         # drawing victory
