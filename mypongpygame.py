@@ -34,20 +34,22 @@ scoring_sound_effect = pygame.mixer.Sound('assets/258020__kodack__arcade-bleep-s
 # player 1
 player_1 = pygame.image.load("assets/player.png")
 player_1_y = 300
+player_1_x = 50
 player_1_move_up = False
 player_1_move_down = False
 
 # player 2 - robot
 player_2 = pygame.image.load("assets/player.png")
 player_2_y = 300
+player_2_x = 1180
 ai_speed = 5
 
 # ball
 ball = pygame.image.load("assets/ball.png")
 ball_x = 640
 ball_y = 360
-ball_dx = 5
-ball_dy = 5
+ball_dx = -5
+ball_dy = -5
 ball_acceleration = 1
 
 # score
@@ -92,18 +94,20 @@ while game_loop:
             bounce_sound_effect.play()
 
         # ball collision with the player 1 's paddle
-        if ball_x < 100:
+        if 100 > ball_x > 50:
             if player_1_y < ball_y + 25:
                 if player_1_y + 150 > ball_y:
                     ball_dx *= -1
+                    ball_dy *= -1
                     ball_acceleration += 0.1
                     bounce_sound_effect.play()
 
         # ball collision with the player 2 's paddle
-        if ball_x > 1160:
+        if  1210 > ball_x > 1160:
             if player_2_y < ball_y + 25:
                 if player_2_y + 150 > ball_y:
                     ball_dx *= -1
+                    ball_dy *= -1
                     ball_acceleration += 0.1
                     bounce_sound_effect.play()
 
@@ -169,8 +173,8 @@ while game_loop:
 
         # drawing objects
         screen.blit(ball, (ball_x, ball_y))
-        screen.blit(player_1, (50, player_1_y))
-        screen.blit(player_2, (1180, player_2_y))
+        screen.blit(player_1, (player_1_x, player_1_y))
+        screen.blit(player_2, (player_2_x, player_2_y))
         screen.blit(score_text, score_text_rect)
     else:
         # drawing victory
