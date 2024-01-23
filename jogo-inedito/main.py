@@ -65,23 +65,33 @@ def balls_moviments():
     ball_rect.x = ball_rect.x + ball_speedx
     ball_rect.y = ball_rect.y + ball_speedy
 
-    if ball_rect.right>= screen_width or ball_rect.left <= 0:
+    if ball_rect.right >= screen_width:
         ball_speedx *= -1
+        ball_rect.x = screen_width - 120 #+ ia_back_paddle_rect.width
+        ball_rect.y = ia_back_paddle_rect.y
+
+    if ball_rect.left <= 0:
+        ball_speedx *= -1
+        ball_rect.x = 120 #+ player_back_paddle_rect.width
+        ball_rect.y = player_back_paddle_rect.y
+
     if ball_rect.top <= 0 or ball_rect.bottom >= screen_height:
         ball_speedy *= -1
-
     if player_front_paddle_rect.x <= ball_rect.x <= player_front_paddle_rect.x + player_front_paddle_rect.width:
         if player_front_paddle_rect.y <= ball_rect.y <= player_front_paddle_rect.y + player_front_paddle_rect.height:
             ball_rect.x = player_front_paddle_rect.x + player_front_paddle_rect.width
             ball_speedx *= -1
+
     if player_back_paddle_rect.x <= ball_rect.x <= player_back_paddle_rect.x + player_back_paddle_rect.width:
         if player_back_paddle_rect.y <= ball_rect.y <= player_back_paddle_rect.y + player_back_paddle_rect.height:
             ball_rect.x = player_back_paddle_rect.x + player_back_paddle_rect.width
             ball_speedx *= -1
+
     if ia_front_paddle_rect.x <= ball_rect.x <= ia_front_paddle_rect.x + ia_front_paddle_rect.width:
         if ia_front_paddle_rect.y <= ball_rect.y <= ia_front_paddle_rect.y + ia_front_paddle_rect.height:
             ball_rect.x = ia_front_paddle_rect.x
             ball_speedx *= -1
+
     if ia_back_paddle_rect.x <= ball_rect.x <= ia_back_paddle_rect.x + ia_back_paddle_rect.width:
         if ia_back_paddle_rect.y <= ball_rect.y <= ia_back_paddle_rect.y + ia_back_paddle_rect.height:
             ball_rect.x = ia_back_paddle_rect.x
@@ -96,6 +106,7 @@ def balls_moviments():
         ia_score += 1
         control_ball = 0
         game_restart(control_ball)
+
     if ball_rect.colliderect(ia_goal_line_rect):
         player_score += 1
         control_ball = 1
