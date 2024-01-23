@@ -18,7 +18,7 @@ field = pygame.transform.scale(imp, (screen_width, screen_height))
 player_front_paddle_rect = pygame.Rect(screen_width / 2 - 340, 350, 10, 90)  # original position (340, 250, 10, 90)
 player_back_paddle_rect = pygame.Rect(100, 385, 10, 45)  # original position (90, 275, 10, 45)
 ia_front_paddle_rect = pygame.Rect(screen_width / 2 + 340, 350, 10, 90)  # original position (60, 250, 10, 90)
-ia_back_paddle_rect = pygame.Rect(screen_width - 100, 385, 10, 45)  # original position (810, 275, 10, 45)
+ia_back_paddle_rect = pygame.Rect(screen_width - 103, 385, 10, 45)  # original position (810, 275, 10, 45)
 
 ball_rect = pygame.Rect(screen_width / 2 - 8, screen_height / 2 - 12, 25, 25)
 
@@ -39,14 +39,22 @@ timer = 0
 player_goals = 0
 ia_goals = 0
 
+def kick_off(goalkeeper):
+    global ball_speedx
+    ball_rect.center = (goalkeeper.x, goalkeeper.centery)
+    ball_speedx = -ball_speedx
+
 def balls_moviments():
     global ball_speedy, ball_speedx, hit
 
     ball_rect.x = ball_rect.x + ball_speedx
     ball_rect.y = ball_rect.y + ball_speedy
 
-    if (ball_rect.left <= 0 or ball_rect.right >= screen_width) and hit == False:
-        ball_speedx = -ball_speedx
+    if (ball_rect.right >= screen_width) and hit == False:
+        kick_off(ia_back_paddle_rect)
+        hit = True
+    elif (ball_rect.left <= 0) and hit == False:
+        kick_off(player_back_paddle_rect)
         hit = True
 
     if (ball_rect.top <= 0 or ball_rect.bottom >= screen_height) and hit == False:
@@ -60,7 +68,18 @@ def balls_moviments():
         ball_speedx = -ball_speedx
         ball_speedy = -ball_speedy
         hit = True
-
+    if hit == False and (ball_rect.colliderect(ia_front_paddle_rect)):
+        ball_speedx = -ball_speedx
+        ball_speedy = -ball_speedy
+        hit = True
+    if hit == False and (ball_rect.colliderect(ia_back_paddle_rect)):
+        ball_speedx = -ball_speedx
+        ball_speedy = -ball_speedy
+        hit = True
+    if hit == False and (ball_rect.colliderect(player_back_paddle_rect)):
+        ball_speedx = -ball_speedx
+        ball_speedy = -ball_speedy
+        hit = True
 
 
 while status :
@@ -95,16 +114,28 @@ while status :
             player_front_paddle_rect.bottom = screen_height
     if key[pygame.K_q]:
         player_back_paddle_rect.move_ip(0, -7)
+        if player_back_paddle_rect.top <= 267:
+            player_back_paddle_rect.top = 267
     elif key[pygame.K_a]:
         player_back_paddle_rect.move_ip(0, 7)
+        if player_back_paddle_rect.bottom >= 539:
+            player_back_paddle_rect.bottom = 539
     if key[pygame.K_u]:
         ia_front_paddle_rect.move_ip(0, -10)
+        if ia_front_paddle_rect.top <= 0:
+            ia_front_paddle_rect.top = 0
     elif key[pygame.K_j]:
         ia_front_paddle_rect.move_ip(0, 10)
+        if ia_front_paddle_rect.bottom >= screen_height:
+            ia_front_paddle_rect.bottom = screen_height
     if key[pygame.K_i]:
         ia_back_paddle_rect.move_ip(0, -7)
+        if ia_back_paddle_rect.top <= 267:
+            ia_back_paddle_rect.top = 267
     elif key[pygame.K_k]:
         ia_back_paddle_rect.move_ip(0, 7)
+        if ia_back_paddle_rect.bottom >= 539:
+            ia_back_paddle_rect.bottom = 539
 
     balls_moviments()
     # player_front_paddle_rect.y = player_front_paddle.y + paddle_speed
