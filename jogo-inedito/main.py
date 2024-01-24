@@ -12,10 +12,12 @@ ball_speedy = -3
 speed_limit = 30
 hit = False
 status = True
-timer = 0
+timer = 60
 player_score = 0
 ia_score = 0
-game_font = pygame.font.Font('freesansbold.ttf',32)
+initial_time = pygame.time.get_ticks()
+
+game_font = pygame.font.Font('freesansbold.ttf',45)
 screen_width = 1600  # original size 900
 screen_height = 800  # original size 600
 screen = pygame.display.set_mode((screen_width, screen_height))
@@ -40,11 +42,12 @@ goal_ia_rect2 = pygame.Rect(screen_width - 94, 528, 100, 11)
 
 player_goal_line_rect = pygame.Rect(70, 278, 11, 250)
 ia_goal_line_rect = pygame.Rect(screen_width - 70, 278, 11, 250)
-def kick_off(goalkeeper, control_ball):
+
+def kick_off(goalkeeper, ctball):
     global ball_speedx
-    if control_ball == 0:
+    if ctball == 0:
         ball_rect.center = (goalkeeper.x + 30, goalkeeper.centery)
-    elif control_ball == 1:
+    elif ctball == 1:
         ball_rect.center = (goalkeeper.x - 30, goalkeeper.centery)
     ball_speedx = -ball_speedx
 
@@ -67,12 +70,12 @@ def balls_moviments():
 
     if ball_rect.right >= screen_width:
         ball_speedx *= -1
-        ball_rect.x = screen_width - 120 #+ ia_back_paddle_rect.width
+        ball_rect.x = screen_width - 120
         ball_rect.y = ia_back_paddle_rect.y
 
     if ball_rect.left <= 0:
         ball_speedx *= -1
-        ball_rect.x = 120 #+ player_back_paddle_rect.width
+        ball_rect.x = 120
         ball_rect.y = player_back_paddle_rect.y
 
     if ball_rect.top <= 0 or ball_rect.bottom >= screen_height:
@@ -112,74 +115,7 @@ def balls_moviments():
         control_ball = 1
         game_restart(control_ball)
 
-    '''    
-    if ball_rect.top <= 0 or ball_rect.bottom >= screen_height:
-        ball_speedy = -ball_speedy
-
-    if ball_rect.x >= screen_width and ball_speedx > 0:
-        control_ball = 1
-        kick_off(ia_back_paddle_rect, control_ball)
-    elif ball_rect.x <= 0 and ball_speedx < 0:
-        control_ball = 0
-        kick_off(player_back_paddle_rect, control_ball)
-
-    if ball_rect.right >= screen_width:
-        control_ball = 1
-        kick_off(ia_back_paddle_rect, control_ball)
-    elif (ball_rect.left <= 0):
-        control_ball = 0
-        kick_off(player_back_paddle_rect, control_ball)
-
-    if ball_rect.colliderect(player_front_paddle_rect):
-        if abs(ball_rect.left - player_front_paddle_rect.right) < collide_tolerance and ball_speedx < 0:
-            if abs(ball_speedy) <= speed_limit:
-                ball_speedy += 4
-            else:
-                ball_speedy = speed_limit
-            if ball_speedx <= speed_limit:
-                ball_speedx += 2
-            else:
-                ball_speedx = speed_limit
-            ball_speedx = -ball_speedx
-        if abs(ball_rect.right - player_front_paddle_rect.left) < collide_tolerance and ball_speedx > 0:
-            if abs(ball_speedy) <= speed_limit:
-                ball_speedy += 4
-            else:
-                ball_speedy = speed_limit
-            if ball_speedx <= speed_limit:
-                ball_speedx += 2
-            else:
-                ball_speedx = speed_limit
-            ball_speedx = -ball_speedx
-    if ball_rect.colliderect(ia_front_paddle_rect):
-        ball_speedx = -ball_speedx
-        ball_speedy = -ball_speedy
-        hit = True
-
-    if hit == False and (ball_rect.colliderect(ia_back_paddle_rect)):
-        ball_speedx = -ball_speedx
-        ball_speedy = -ball_speedy
-        hit = True
-
-    if hit == False and (ball_rect.colliderect(player_back_paddle_rect)):
-        ball_speedx = -ball_speedx
-        ball_speedy = -ball_speedy
-        hit = True
-
-    if ball_rect.colliderect(ia_goal_line_rect):
-        player_score = player_score + 1
-        ball_speedx = -7
-        control_ball = 1
-        game_restart(control_ball)
-
-    if hit == False and (ball_rect.colliderect(player_goal_line_rect)):
-        ia_score = ia_score + 1
-        ball_speedx = 7
-        control_ball = 0
-        game_restart(control_ball)
-'''
-
-while status :
+while status:
     # drawing on screen
     screen.fill((0, 0, 0))
     screen.blit(field, (0, 0))
@@ -199,9 +135,13 @@ while status :
     ball = pygame.draw.rect(screen, (155, 0, 0), ball_rect)
 
     player_text = game_font.render('{}'.format(player_score), False, (200, 200, 200))
-    screen.blit(player_text, ((screen_width/2) - 50, 100))
+    screen.blit(player_text, ((screen_width/2) - 150, 100))
     ia_text = game_font.render('{}'.format(ia_score), False, (200, 200, 200))
-    screen.blit(ia_text, ((screen_width/2) + 50, 100))
+    screen.blit(ia_text, ((screen_width/2) + 150, 100))
+    timer_text = game_font.render('{}'.format(timer), False, (255, 0, 150))
+    screen.blit(timer_text, (screen_width/2 - 20, 100))
+
+    current_time = pygame.time.get_ticks()
 
     key = pygame.key.get_pressed()
     if key[pygame.K_w]:
@@ -240,6 +180,20 @@ while status :
     balls_moviments()
 
     if player_score == 2 or ia_score == 2:
+        status = False
+    real_time = current_time - initial_time
+    if real_time % 60 == 0:
+        timer -= 1
+
+    if timer <= 0 and (ia_score == player_score):
+        timer = 60
+        ball_rect.center = (screen_width / 2, screen_height / 2)
+        player_front_paddle_rect.center = (screen_width / 2 - 340, 350)
+        player_back_paddle_rect.center = (100, 385)
+        ia_front_paddle_rect.center = (screen_width / 2 + 340, 350)
+        ia_back_paddle_rect.center = (screen_width - 103, 385)
+        ball_speedy = -1
+    elif timer == 0:
         status = False
 
     for event in pygame.event.get():
